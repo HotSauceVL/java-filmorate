@@ -7,6 +7,7 @@ import org.springframework.web.server.ResponseStatusException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -16,7 +17,7 @@ public class FilmController {
     private Map<Long, Film> films = new HashMap<>();
 
     @PostMapping ("/films")
-    public Film addFilm(@RequestBody Film film, HttpServletRequest request) {
+    public Film add(@Valid @RequestBody Film film, HttpServletRequest request) {
         try {
             if (validation(film)) {
                 log.info("Получен запрос к эндпоинту: {} {}, тело запроса {}", request.getMethod(),
@@ -31,7 +32,7 @@ public class FilmController {
     }
 
     @PutMapping("/films")
-    public String updateFilm(@RequestBody Film film, HttpServletRequest request) {
+    public String update(@Valid @RequestBody Film film, HttpServletRequest request) {
         String response = "Что-то пошло не так";
         try {
             if (validation(film)) {
@@ -53,23 +54,14 @@ public class FilmController {
     }
 
     @GetMapping("/films")
-    public List<Film> getAllFilms() {
+    public List<Film> getAll() {
         return new ArrayList<>(films.values());
     }
 
     private boolean validation(Film film) throws ValidationException {
-        if (film.getName().isBlank()) {
-            throw new ValidationException("Название фильма не может быть пустым");
-        }
-        if (film.getDescription().length() > 200 || film.getDescription().isBlank()) {
-            throw new ValidationException("Описание фильма не может быть больше 200 символов");
-        }
         if (film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
             throw new ValidationException("Дата релиза не может быть раньше 28.12.1895");
-        }
-        if (film.getDuration().isNegative()) {
-            throw new ValidationException("Продолжительность не может быть отрицательной");
-        }
+        } // Тут для проверки нужно писать свою аннотацию или можно проще?=)
         return true;
     }
 }
