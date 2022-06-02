@@ -17,6 +17,7 @@ import java.util.stream.Stream;
 @Slf4j
 @RestController
 @ComponentScan({"storage.film"})
+@RequestMapping("/films")
 public class FilmController {
     FilmService filmService;
     FilmStorage filmStorage;
@@ -26,7 +27,7 @@ public class FilmController {
         this.filmStorage = filmStorage;
     }
 
-    @PostMapping ("/films")
+    @PostMapping
     public Film add(@Valid @RequestBody Film film, HttpServletRequest request) {
         log.info("Получен запрос к эндпоинту: {} {}, тело запроса {}", request.getMethod(),
                     request.getRequestURI(), film);
@@ -37,7 +38,7 @@ public class FilmController {
         return addedFilm;
     }
 
-    @PutMapping("/films")
+    @PutMapping
     public @Valid Film update(@Valid @RequestBody Film film, HttpServletRequest request) {
         log.info("Получен запрос к эндпоинту: {} {}, тело запроса {}", request.getMethod(),
                     request.getRequestURI(), film);
@@ -48,36 +49,36 @@ public class FilmController {
         return updatedFilm;
     }
 
-    @GetMapping("/films")
+    @GetMapping
     public List<Film> getAll() {
         return filmStorage.getAll();
     }
 
-    @DeleteMapping("/films/{filmId}")
+    @DeleteMapping("/{filmId}")
     public String delete(@PathVariable Long filmId) {
         filmStorage.delete(filmId);
         return "Фильм успешно удален";
     }
 
 
-    @GetMapping("/films/{filmId}")
+    @GetMapping("/{filmId}")
     public Optional<Film> getFilmById(@PathVariable Long filmId) {
         return Optional.ofNullable(filmStorage.getById(filmId));
     }
 
-    @PutMapping("/films/{id}/like/{userId}")
+    @PutMapping("/{id}/like/{userId}")
     public String addLike(@PathVariable Long id, @PathVariable Long userId) {
         filmService.addLike(id, userId);
         return "Лайк успешно добавлен";
     }
 
-    @DeleteMapping("/films/{id}/like/{userId}")
+    @DeleteMapping("/{id}/like/{userId}")
     public String removeLike(@PathVariable Long id, @PathVariable Long userId) {
         filmService.removeLike(id, userId);
         return "Лайк удален";
     }
 
-    @GetMapping("/films/popular")
+    @GetMapping("/popular")
     public Stream<Film> getPopularFilms(@RequestParam(defaultValue = "10", required = false) Integer count) {
         if (count <= 0)
             throw new IncorrectParameterException("Параметр count не может быть меньше 1");

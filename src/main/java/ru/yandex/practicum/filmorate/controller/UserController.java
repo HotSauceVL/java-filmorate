@@ -18,6 +18,7 @@ import java.util.List;
 @Slf4j
 @RestController
 @ComponentScan({"storage.user"})
+@RequestMapping("/users")
 public class UserController {
     UserService userService;
     UserStorage userStorage;
@@ -27,49 +28,44 @@ public class UserController {
         this.userStorage = userStorage;
     }
 
-    @PostMapping("/users")
+    @PostMapping
     public User add(@Valid @RequestBody User user, HttpServletRequest request) {
         log.info("Получен запрос к эндпоинту: {} {}, тело запроса {}", request.getMethod(),
                         request.getRequestURI(), user);
         return userStorage.add(user);
     }
 
-    @PutMapping("/users")
+    @PutMapping
     public User update(@Valid @RequestBody User user, HttpServletRequest request) {
-       // try {
             log.info("Получен запрос к эндпоинту: {} {}, тело запроса {}", request.getMethod(),
                     request.getRequestURI(), user);
             return userStorage.update(user);
-       /* } catch (IllegalArgumentException e) {
-            log.info("Ошибка входных данных: ", e.getMessage());
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
-        }*/
+
     }
 
-
-    @GetMapping("/users")
+    @GetMapping
     public List<User> getAll() {
         return userStorage.getAll();
     }
 
-    @GetMapping("/users/{id}")
+    @GetMapping("/{id}")
     public User getById(@PathVariable Long id) {
         return userStorage.getById(id);
     }
 
-    @PutMapping("/users/{id}/friends/{friendId}")
+    @PutMapping("/{id}/friends/{friendId}")
     public String addFriend(@PathVariable Long id, @PathVariable Long friendId) {
         userService.addFriend(id, friendId);
         return "Друг успешно добавлен";
     }
 
-    @DeleteMapping("/users/{id}/friends/{friendId}")
+    @DeleteMapping("/{id}/friends/{friendId}")
     public String removeFriend(@PathVariable Long id, @PathVariable Long friendId) {
         userService.removeFriend(id, friendId);
         return "Друг удален";
     }
 
-    @GetMapping("/users/{id}/friends")
+    @GetMapping("/{id}/friends")
     public List<User> getFriends(@PathVariable Long id) {
        List<Long> friendsId = new ArrayList<>(userStorage.getById(id).getFriends());
        List<User> friends = new ArrayList<>();
@@ -79,7 +75,7 @@ public class UserController {
        return friends;
     }
 
-    @GetMapping("/users/{id}/friends/common/{otherId}")
+    @GetMapping("/{id}/friends/common/{otherId}")
     public List<User> getMutualFriends(@PathVariable Long id, @PathVariable Long otherId) {
         return userService.getMutualFriends(id, otherId);
     }
