@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
@@ -16,10 +17,13 @@ import java.util.stream.Stream;
 
 @Slf4j
 @RestController
-@ComponentScan({"storage.film"})
+//@ComponentScan({"storage.film"})
+@ComponentScan({"dao"})
 @RequestMapping("/films")
+@Qualifier("filmDbStorage")
 public class FilmController {
     FilmService filmService;
+
     FilmStorage filmStorage;
     @Autowired
     public FilmController(FilmService filmService, FilmStorage filmStorage) {

@@ -16,7 +16,7 @@ import java.util.Set;
 public class Film {
     private long id;
     @NotBlank
-    private String name;
+    private String title;
     @Size(min = 1, max = 200)
     @NotBlank
     private String description;
@@ -26,7 +26,22 @@ public class Film {
     @JsonFormat(pattern = "SECONDS")
     private Duration duration;
     private Set<Long> likes = new HashSet<>();
+
+    public Film(long id, String title, String description, LocalDate releaseDate, Duration duration, Integer rate,
+                String genre, String mpa) {
+        this.id = id;
+        this.title = title;
+        this.description = description;
+        this.releaseDate = releaseDate;
+        this.duration = duration;
+        this.rate = rate;
+        this.genre = genre;
+        this.mpa = mpa;
+    }
+
     private Integer rate = 0;
+    private String genre;
+    private String mpa;
 
     public void addLike(Long userId) {
         likes.add(userId);

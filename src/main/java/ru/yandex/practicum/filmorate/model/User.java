@@ -24,6 +24,7 @@ public class User {
     @Past
     private LocalDate birthday;
     private Set<Long> friends = new HashSet<>();
+    private Set<Long> followers = new HashSet<>();
 
     public void addFriend(Long friendId) {
         friends.add(friendId);
