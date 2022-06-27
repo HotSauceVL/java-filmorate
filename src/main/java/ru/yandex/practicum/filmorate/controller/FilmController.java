@@ -1,67 +1,88 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import storage.film.FilmStorage;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Stream;
 
 @Slf4j
 @RestController
+@ComponentScan({"storage.film"})
+@RequestMapping("/films")
 public class FilmController {
-    private Map<Long, Film> films = new HashMap<>();
+    FilmService filmService;
+    FilmStorage filmStorage;
+    @Autowired
+    public FilmController(FilmService filmService, FilmStorage filmStorage) {
+        this.filmService = filmService;
+        this.filmStorage = filmStorage;
+    }
 
-    @PostMapping ("/films")
+    @PostMapping
     public Film add(@Valid @RequestBody Film film, HttpServletRequest request) {
-        try {
-            if (validation(film)) {
-                log.info("Получен запрос к эндпоинту: {} {}, тело запроса {}", request.getMethod(),
-                        request.getRequestURI(), film);
-                films.put(film.getId(), film);
-            }
-        } catch (ValidationException e) {
-            log.info("Ошибка валидации: "+ e.getMessage());
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        log.info("Получен запрос к эндпоинту: {} {}, тело запроса {}", request.getMethod(),
+                    request.getRequestURI(), film);
+        Film addedFilm = filmStorage.add(film);
+        if (addedFilm.getRate() != 0) {
+            filmService.updateMostLikedFilms(addedFilm.getId());
         }
-        return film;
+        return addedFilm;
     }
 
-    @PutMapping("/films")
-    public String update(@Valid @RequestBody Film film, HttpServletRequest request) {
-        String response = "Что-то пошло не так";
-        try {
-            if (validation(film)) {
-                log.info("Получен запрос к эндпоинту: {} {}, тело запроса {}", request.getMethod(),
-                        request.getRequestURI(), film);
-                if (films.containsKey(film.getId())) {
-                    films.put(film.getId(), film);
-                    response = "Фильм успешно обновлен: " + film;
-                } else {
-                    films.put(film.getId(), film);
-                    response = "Фильма с таким Id нет в фильмотеке, ваш фильм успешно добавлен: " + film;
-                }
-            }
-        } catch (ValidationException e) {
-            log.info("Ошибка валидации: "+ e.getMessage());
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+    @PutMapping
+    public @Valid Film update(@Valid @RequestBody Film film, HttpServletRequest request) {
+        log.info("Получен запрос к эндпоинту: {} {}, тело запроса {}", request.getMethod(),
+                    request.getRequestURI(), film);
+        Film updatedFilm = filmStorage.update(film);
+        if (updatedFilm.getRate() != 0) {
+            filmService.updateMostLikedFilms(updatedFilm.getId());
         }
-        return response;
+        return updatedFilm;
     }
 
-    @GetMapping("/films")
+    @GetMapping
     public List<Film> getAll() {
-        return new ArrayList<>(films.values());
+        return filmStorage.getAll();
     }
 
-    private boolean validation(Film film) throws ValidationException {
-        if (film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
-            throw new ValidationException("Дата релиза не может быть раньше 28.12.1895");
-        } // Тут для проверки нужно писать свою аннотацию или можно проще?=)
-        return true;
+    @DeleteMapping("/{filmId}")
+    public String delete(@PathVariable Long filmId) {
+        filmStorage.delete(filmId);
+        return "Фильм успешно удален";
     }
+
+
+    @GetMapping("/{filmId}")
+    public Optional<Film> getFilmById(@PathVariable Long filmId) {
+        return Optional.ofNullable(filmStorage.getById(filmId));
+    }
+
+    @PutMapping("/{id}/like/{userId}")
+    public String addLike(@PathVariable Long id, @PathVariable Long userId) {
+        filmService.addLike(id, userId);
+        return "Лайк успешно добавлен";
+    }
+
+    @DeleteMapping("/{id}/like/{userId}")
+    public String removeLike(@PathVariable Long id, @PathVariable Long userId) {
+        filmService.removeLike(id, userId);
+        return "Лайк удален";
+    }
+
+    @GetMapping("/popular")
+    public Stream<Film> getPopularFilms(@RequestParam(defaultValue = "10", required = false) Integer count) {
+        if (count <= 0)
+            throw new IncorrectParameterException("Параметр count не может быть меньше 1");
+        return filmService.getMostLikedFilms().stream().limit(count);
+    }
+
 }
