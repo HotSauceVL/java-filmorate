@@ -3,12 +3,11 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
-import storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
@@ -17,16 +16,13 @@ import java.util.stream.Stream;
 
 @Slf4j
 @RestController
-//@ComponentScan({"storage.film"})
-@ComponentScan({"dao"})
 @RequestMapping("/films")
-@Qualifier("filmDbStorage")
 public class FilmController {
     FilmService filmService;
 
     FilmStorage filmStorage;
     @Autowired
-    public FilmController(FilmService filmService, FilmStorage filmStorage) {
+    public FilmController(FilmService filmService, @Qualifier("filmDbStorage") FilmStorage filmStorage) {
         this.filmService = filmService;
         this.filmStorage = filmStorage;
     }
@@ -36,9 +32,6 @@ public class FilmController {
         log.info("Получен запрос к эндпоинту: {} {}, тело запроса {}", request.getMethod(),
                     request.getRequestURI(), film);
         Film addedFilm = filmStorage.add(film);
-        if (addedFilm.getRate() != 0) {
-            filmService.updateMostLikedFilms(addedFilm.getId());
-        }
         return addedFilm;
     }
 
@@ -47,9 +40,6 @@ public class FilmController {
         log.info("Получен запрос к эндпоинту: {} {}, тело запроса {}", request.getMethod(),
                     request.getRequestURI(), film);
         Film updatedFilm = filmStorage.update(film);
-        if (updatedFilm.getRate() != 0) {
-            filmService.updateMostLikedFilms(updatedFilm.getId());
-        }
         return updatedFilm;
     }
 
@@ -83,10 +73,10 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public Stream<Film> getPopularFilms(@RequestParam(defaultValue = "10", required = false) Integer count) {
+    public Collection<Film> getPopularFilms(@RequestParam(defaultValue = "10", required = false) Integer count) {
         if (count <= 0)
             throw new IncorrectParameterException("Параметр count не может быть меньше 1");
-        return filmService.getMostLikedFilms().stream().limit(count);
+        return filmService.getMostLikedFilms(count);//.stream().limit(count);
     }
 
 }

@@ -1,18 +1,29 @@
-package storage.film;
+package ru.yandex.practicum.filmorate.storage.film;
 
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
-import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
     private Map<Long, Film> films = new HashMap<>();
     private Long currentId = 0L;
+
+    private final Comparator<Film> comparator = ((o1, o2) -> {
+        if (o1.getId() == o2.getId()) {
+            return 0;
+        } else {
+            if (o2.getRate() > o1.getRate())
+                return 1;
+            else
+                return -1;
+        }
+    });
 
     private Long getNextId() {
         return ++currentId;
@@ -72,5 +83,16 @@ public class InMemoryFilmStorage implements FilmStorage {
             return true;
         else
             throw new FilmNotFoundException("Фильма с таким id не существует");
+    }
+
+    @Override
+    public Collection<Film> getMostLikedFilms(int count) { // переписал, не тестил
+        Set<Film> sortedMostLikedFilms = new TreeSet<>(comparator);
+        for (Film film : films.values()) {
+            if (film.getRate() != null && film.getRate() > 0) {
+                sortedMostLikedFilms.add(film);
+            }
+        }
+        return sortedMostLikedFilms.stream().limit(count).collect(Collectors.toList());
     }
 }
