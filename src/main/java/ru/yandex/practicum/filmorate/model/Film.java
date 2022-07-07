@@ -66,10 +66,6 @@ public class Film {
         return duration.getSeconds();
     }
 
-    public long getId() {
-        return id;
-    }
-
 
     @Override
     public boolean equals(Object o) {

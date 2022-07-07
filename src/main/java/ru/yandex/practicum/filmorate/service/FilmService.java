@@ -12,7 +12,7 @@ import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 import java.util.*;
 
 @Slf4j
-@ComponentScan({"storage.dao"})
+@ComponentScan({"storage"})
 @Service
 public class FilmService {
     private FilmStorage filmStorage;

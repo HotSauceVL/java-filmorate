@@ -76,7 +76,7 @@ public class FilmController {
     public Collection<Film> getPopularFilms(@RequestParam(defaultValue = "10", required = false) Integer count) {
         if (count <= 0)
             throw new IncorrectParameterException("Параметр count не может быть меньше 1");
-        return filmService.getMostLikedFilms(count);//.stream().limit(count);
+        return filmService.getMostLikedFilms(count);
     }
 
 }

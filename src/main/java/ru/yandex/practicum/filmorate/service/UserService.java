@@ -21,7 +21,7 @@ public class UserService {
         userStorage.checkId(userId);
         userStorage.checkId(friendId);
         User user = userStorage.getById(userId);
-        user.addFriend(friendId);
+        user.getFriends().add(friendId);
         userStorage.update(user);
     }
 
@@ -29,7 +29,7 @@ public class UserService {
         userStorage.checkId(userId);
         userStorage.checkId(friendId);
         User user = userStorage.getById(userId);
-        user.removeFriend(friendId);
+        user.getFriends().remove(friendId);
         userStorage.update(user);
     }
 

@@ -1,22 +1,18 @@
-package ru.yandex.practicum.filmorate.storage.dao;
+package ru.yandex.practicum.filmorate.storage.mpa;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.MPA;
-import ru.yandex.practicum.filmorate.storage.dao.interfaces.MPARateDao;
 
 import java.util.Collection;
 
 @Component
+@RequiredArgsConstructor
 public class MPADaoImpl implements MPARateDao {
     private final JdbcTemplate jdbcTemplate;
 
-    @Autowired
-    public MPADaoImpl (JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
     @Override
     public Collection<MPA> getAllMPA() {
         String sql = "SELECT * FROM MPA_RATE";
@@ -30,6 +26,14 @@ public class MPADaoImpl implements MPARateDao {
         String sql = "SELECT * FROM MPA_RATE WHERE MPA_RATE_ID = ?";
         return jdbcTemplate.queryForObject(sql, (rs, rowNum) -> new MPA(rs.getInt("MPA_RATE_ID"),
                 rs.getString("NAME")), id);
+    }
+
+    @Override
+    public MPA getFilmMpa(long filmId) {
+        String sql = "SELECT MPA_RATE_ID, NAME FROM MPA_RATE WHERE MPA_RATE_ID" +
+                " IN (SELECT MPA_RATE_ID FROM FILMS WHERE FILM_ID = ?)";
+        return jdbcTemplate.queryForObject(sql, (rs, rowNum) ->
+                new MPA(rs.getInt("MPA_RATE_ID"), rs.getString("NAME")), filmId);
     }
 
     private boolean checkId(int id) {
