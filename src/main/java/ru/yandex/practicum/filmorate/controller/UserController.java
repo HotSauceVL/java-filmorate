@@ -2,13 +2,12 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
-import storage.user.UserStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
@@ -19,11 +18,12 @@ import java.util.List;
 @RestController
 @ComponentScan({"storage.user"})
 @RequestMapping("/users")
+//@Qualifier("userDbStorage")
 public class UserController {
     UserService userService;
     UserStorage userStorage;
     @Autowired
-    public UserController(UserService userService, UserStorage userStorage) {
+    public UserController(UserService userService, @Qualifier("userDbStorage") UserStorage userStorage) {
         this.userService = userService;
         this.userStorage = userStorage;
     }

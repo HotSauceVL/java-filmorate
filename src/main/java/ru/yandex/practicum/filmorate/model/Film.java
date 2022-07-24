@@ -8,9 +8,7 @@ import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import javax.validation.constraints.*;
 import java.time.Duration;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 @Data
 public class Film {
@@ -25,8 +23,31 @@ public class Film {
     @DurationMin (nanos = 1)
     @JsonFormat(pattern = "SECONDS")
     private Duration duration;
-    private Set<Long> likes = new HashSet<>();
-    private Integer rate = 0;
+    private Set<Long> likes;
+    private Integer rate;
+
+    private Set<Genre> genres;
+    @NotNull
+    private MPA mpa;
+
+    public Film(long id, String name, String description, LocalDate releaseDate, Duration duration, Integer rate,
+                Collection<Genre> genres, MPA mpa, Collection<Long> likes) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.releaseDate = releaseDate;
+        this.duration = duration;
+        this.rate = rate;
+        if (genres != null) {
+            this.genres = new HashSet<>(genres);
+        } else
+            this.genres = null;
+        if (likes != null) {
+            this.likes = new HashSet<>(likes);
+        } else
+            this.likes = null;
+        this.mpa = mpa;
+    }
 
     public void addLike(Long userId) {
         likes.add(userId);
@@ -45,9 +66,6 @@ public class Film {
         return duration.getSeconds();
     }
 
-    public long getId() {
-        return id;
-    }
 
     @Override
     public boolean equals(Object o) {
